@@ -217,6 +217,8 @@ struct bootp {
 #define	TAG_NETINFO_PARENT_TAG	((uint8_t) 113)
 #define	TAG_URL			((uint8_t) 114)
 #define TAG_MUDURL              ((uint8_t) 161)
+/*  RFC 5969, 6RD */
+#define TAG_6RD			((uint8_t) 212)
 
 /* DHCP Message types (values for TAG_DHCP_MESSAGE option) */
 #define DHCPDISCOVER	1
@@ -530,6 +532,8 @@ static const struct tok tag2str[] = {
 	{ TAG_NETINFO_PARENT_TAG, "aNITAG" },
 	{ TAG_URL,		"aURL" },
 	{ TAG_MUDURL,           "aMUD-URL" },
+/*  RFC 5969, 6RD */
+	{ TAG_6RD,              "i6RD"},
 	{ 0, NULL }
 };
 
