@@ -533,7 +533,7 @@ static const struct tok tag2str[] = {
 	{ TAG_URL,		"aURL" },
 	{ TAG_MUDURL,           "aMUD-URL" },
 /*  RFC 5969, 6RD */
-	{ TAG_6RD,              "x6RD"},
+	{ TAG_6RD,              "$6RD"},
 	{ 0, NULL }
 };
 
@@ -782,7 +782,28 @@ rfc1048_print(netdissect_options *ndo,
 		case '$':
 			/* Guys we can't handle with one of the usual cases */
 			switch (tag) {
-
+			case TAG_6RD:
+				if (len < 22) {
+				     	ND_PRINT("[ERROR: length < 22 bytes]");
+                                    	break;
+				}
+				tag = GET_U_1(bp);
+				ND_PRINT("IPv4MaskLen: %u, ", tag);
+                                bp++;
+				len--;
+                                tag = GET_U_1(bp);
+                                ND_PRINT("6rdPrefixLen: %u, ", tag);
+                                bp++;
+                                len--;
+				ND_PRINT("IPv6Prefix: %s ", GET_IP6ADDR_STRING(bp));
+				bp = bp + 16;
+                                len = len - 16;
+ 				while (len >= 4) {
+					ND_PRINT("6RDRelay: %s ", GET_IPADDR_STRING(bp));
+					bp = bp + 4;
+					len = len - 4;
+				}
+                                break;
 			case TAG_NETBIOS_NODE:
 				/* this option should be at least 1 byte long */
 				if (len < 1) {
@@ -1031,40 +1052,6 @@ rfc1048_print(netdissect_options *ndo,
 					ND_PRINT("[ERROR: length < 2 bytes]");
 				}
 				break;
-
-
-							case TAG_SZTP_REDIRECT:
-				/* as per https://datatracker.ietf.org/doc/html/rfc8572#section-8.3
-				 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-...-+-+-+-+-+-+-+
-				 |        uri-length             |          URI                  |
-				 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-...-+-+-+-+-+-+-+
-
-				 * uri-length: 2 octets long; specifies the length of the URI data.
-				 * URI: URI of the SZTP bootstrap server.
-				 */
-				while (len >= 2) {
-					suboptlen = GET_BE_U_2(bp);
-					bp += 2;
-					len -= 2;
-					ND_PRINT("\n\t	    ");
-					ND_PRINT("length %u: ", suboptlen);
-					if (len < suboptlen) {
-						ND_PRINT("length goes past end of option");
-						bp += len;
-						len = 0;
-						break;
-					}
-					ND_PRINT("\"");
-					nd_printjn(ndo, bp, suboptlen);
-					ND_PRINT("\"");
-					len -= suboptlen;
-					bp += suboptlen;
-				}
-				if (len != 0) {
-					ND_PRINT("[ERROR: length < 2 bytes]");
-				}
-				break;
-				
 			default:
 				ND_PRINT("[unknown special tag %u, size %u]",
 					  tag, len);
