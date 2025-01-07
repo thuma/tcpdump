@@ -795,11 +795,14 @@ rfc1048_print(netdissect_options *ndo,
                                 ND_PRINT("6rdPrefixLen: %u, ", tag);
                                 bp++;
                                 len--;
-				ND_PRINT("IPv6Prefix: %s ", GET_IP6ADDR_STRING(bp));
+				ND_PRINT("IPv6Prefix: %s 6RDRelay: ", GET_IP6ADDR_STRING(bp));
 				bp = bp + 16;
                                 len = len - 16;
+				ND_PRINT("%s", GET_IPADDR_STRING(bp));
+				bp = bp + 4;
+                                len = len - 4;
  				while (len >= 4) {
-					ND_PRINT("6RDRelay: %s ", GET_IPADDR_STRING(bp));
+					ND_PRINT(",%s", GET_IPADDR_STRING(bp));
 					bp = bp + 4;
 					len = len - 4;
 				}
